@@ -1,0 +1,130 @@
+#!/bin/bash
+
+round() {
+    echo "scale=0; ($1 + 0.5) / 1" | bc
+}
+
+dir_BASE="ff++_shared/FaceForensics++_shared/"  #modifica con tuo path video social shared
+
+dir_IMMAGINI="/media/SSD_new/FaceForensics++/manipulated_sequences/"  #modifica con tuo path video non shared
+
+
+socials=(
+  "Facebook"
+  "YouTube"
+)
+
+codec=(
+  "libx264"
+)
+
+main_folders=(
+  "FaceShifter"
+  "Deepfakes"
+  "Face2Face"
+  "FaceSwap"
+  "NeuralTextures"
+)
+
+image_name="%04d.png"
+
+tau=1
+array1=()
+array2=()
+array3=()
+
+crf_1_file="crf_1.csv"
+crf_2_file="crf_2.csv"
+duration_file="duration.csv"
+if [ -e "test.mp4" ]; then
+    rm -f "test.mp4"
+    echo "File test.mp4 removed."
+fi
+if [ -e "$crf_1_file" ]; then
+    rm -f "$crf_1_file"
+    echo "File $crf_1_file removed."
+fi
+if [ -e "$crf_2_file" ]; then
+    rm -f "$crf_2_file"
+    echo "File $crf_2_file removed."
+fi
+if [ -e "$duration_file" ]; then
+    rm -f "$duration_file"
+    echo "File $duration_file removed."
+fi
+for folder in "${socials[@]}"; do
+  crf_1_file="${folder}"/"crf_1.csv"
+  crf_2_file="${folder}"/"crf_2.csv"
+  duration_file="${folder}"/"duration.csv"
+  arr_bitstream=0
+  iter=0
+  for codecs in "${codec[@]}"; do
+    for mainf in "${main_folders[@]}"; do
+      if [ "$folder" = "YouTube" ];
+      then
+        FILES="ff++_shared/FaceForensics++_shared"/"${folder}"/"val_youtube"_"${mainf}"/"*.mp4"
+        BASE_PATH="/media/SSD_new/FaceForensics++/manipulated_sequences/""${mainf}""/c23/videos"
+      else
+        FILES="ff++_shared/FaceForensics++_shared"/"${folder}"/"val_facebook"_"${mainf}"/"*.mp4"
+        BASE_PATH="/media/SSD_new/FaceForensics++/manipulated_sequences/""${mainf}""/c23/videos"
+      fi
+      for f in $FILES
+          do
+          frame_ratio=$(ffprobe -v error -select_streams v -of default=noprint_wrappers=1:nokey=1 -show_entries stream=r_frame_rate "$f")
+          pix_fmt=$(ffprobe -v error -select_streams v -of default=noprint_wrappers=1:nokey=1 -show_entries stream=pix_fmt "$f")
+          post_size=$(ffprobe -v error -select_streams v:0 -show_entries format=bit_rate -of default=noprint_wrappers=1:nokey=1 "$f")
+          ori_size=$(ffprobe -v error -select_streams v:0 -show_entries format=bit_rate -of default=noprint_wrappers=1:nokey=1 $BASE_PATH/"$(basename $f)")
+          duration=$(ffprobe -v error -select_streams v -of default=noprint_wrappers=1:nokey=1 -show_entries stream=duration $BASE_PATH/"$(basename $f)")
+          array3+=("$duration")
+
+          crf_needed=$(echo "23 + l($post_size/$ori_size)/l(1-0.1285)" | bc -l) 
+          array1+=( "$crf_needed" )
+          echo "---vvv---"
+          echo $ori_size
+          echo $post_size
+          echo $crf_needed
+          echo "---iii---"
+      
+          crt=20
+          flag_search=1
+          echo "$f"
+          echo $BASE_PATH/"$(basename $f)"
+          for i in $(seq 20 51); do  
+            ffmpeg -loglevel error -nostdin -i $BASE_PATH/"$(basename $f)" -r "${frame_ratio}" -crf $i -vcodec "${codecs}" -pix_fmt "${pix_fmt}" "test.mp4"
+            d=$(ffprobe -v error -select_streams v:0 -show_entries format=bit_rate -of default=noprint_wrappers=1:nokey=1 test.mp4)
+            e=$(ffprobe -v error -select_streams v:0 -show_entries format=bit_rate -of default=noprint_wrappers=1:nokey=1 $f)
+            d=$(echo "$d" | sed 's:.*=::')
+	          e=$(echo "$e" | sed 's:.*=::') 
+            rm test.mp4
+            if [ "$d" -lt "$e" ]; then
+                  crt=$((i))
+                  array2+=( "$crt" )
+                  echo $crt
+                  break
+            fi
+          done
+          
+
+	        arr_bitstream=$((arr_bitstream+crt))
+          iter=$((iter+1))
+          echo "######mean CRT#######"
+          result=$(echo "scale=2; $arr_bitstream / $iter" | bc)
+          echo $result
+          echo "#####################"
+      done
+    done
+  done
+  for element in "${array1[@]}"; do
+    echo "$element" >> "$crf_1_file"
+  done
+
+  for element in "${array2[@]}"; do
+    echo "$element" >> "$crf_2_file"
+  done
+
+  for element in "${array3[@]}"; do
+    echo "$element" >> "$duration_file"
+  done
+  echo $((arr_bitstream/iter)) > "${folder}".txt
+done
+
