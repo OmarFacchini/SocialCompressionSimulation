@@ -6,13 +6,13 @@ round() {
 }
 
 # my path
-dir_BASE="../../../../../../media/mmlab/Datasets_4TB/ff++_shared/FaceForensics++_shared/"
+dir_BASE="dataset/shared/"
 
 # original path
 # dir_BASE="ff++_shared/FaceForensics++_shared/"  #modifica con tuo path video social shared
 
 # my path
-dir_IMMAGINI="../../../../../../media/mmlab/Datasets_4TB/FaceForensics++/manipulated_sequences/" 
+dir_IMMAGINI="dataset/nonShared/manipulated_sequences/" 
 
 # original path
 # dir_IMMAGINI="/media/SSD_new/FaceForensics++/manipulated_sequences/"  #modifica con tuo path video non shared

@@ -1,6 +1,11 @@
 #!/bin/bash
 
-dir_BASE="/media/SSD_new/BACKUP/home/federicomarcon/emu_social_v2" #path in cui vengono salvati i video
+# dir_BASE="/media/SSD_new/BACKUP/home/federicomarcon/emu_social_v2" #path in cui vengono salvati i video
+
+dir_BASE="dataset/emulated/" #path in cui vengono salvati i video
+
+# my path
+dir_ORIGINAL_NON_SHARED="dataset/nonShared/manipulated_sequences/" 
 
 socials=(
   "Facebook"
@@ -14,11 +19,14 @@ codec=(
 main_folders=(
   "FaceShifter"
   "Deepfakes"
-  "Face2Face"
+  #"Face2Face"
   "FaceSwap"
-  "NeuralTextures"
+  #"NeuralTextures"
 )
 
+# average oneshot(using crf_2.csv):
+# yt = 26.19
+# fb = 27.82 
 yt_crf=26 #i tuoi valori
 fb_crf=28 #i tuoi valori
 
@@ -33,11 +41,11 @@ image_name="%04d.png"
 for folder in "${socials[@]}"; do
   for codecs in "${codec[@]}"; do
     for mainf in "${main_folders[@]}"; do
-      FILES="/media/SSD_new/FaceForensics++/manipulated_sequences"/"${mainf}"/"c23/videos/*.mp4"
+      FILES="${dir_ORIGINAL_NON_SHARED}""${mainf}"/"c23/videos/*.mp4"
       for f in $FILES
         do
-        echo "${dir_BASE}"/"${folder}"/"${mainf}"/"${codecs}"/
-        mkdir -p "${dir_BASE}"/"${folder}"/"${mainf}"/"${codecs}"/ #crea sub-folder in path di output
+        echo "${dir_BASE}""${folder}"/"${mainf}"/"${codecs}"/
+        mkdir -p "${dir_BASE}""${folder}"/"${mainf}"/"${codecs}"/ #crea sub-folder in path di output
         #loop video in native path
         echo "$f"
         echo "$(basename $f)"
@@ -47,7 +55,7 @@ for folder in "${socials[@]}"; do
         else
               crf=$fb_crf
         fi
-        ffmpeg -loglevel error -nostdin -i "$f" -crf "${crf}" -vcodec "${codecs}" -pix_fmt yuv420p "${dir_BASE}"/"${folder}"/"${mainf}"/"${codecs}"/"$(basename $f)"
+        ffmpeg -loglevel error -nostdin -i "$f" -crf "${crf}" -vcodec "${codecs}" -pix_fmt yuv420p "${dir_BASE}""${folder}"/"${mainf}"/"${codecs}"/"$(basename $f)"
       done
     done
   done
