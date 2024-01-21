@@ -1,4 +1,5 @@
 emulator_scripts_OFF/emulator_scripts/dataset/
+emulator_scripts_OFF/emulator_scripts/media/
 
 *.csv
 *.txt
