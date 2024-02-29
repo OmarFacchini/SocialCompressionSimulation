@@ -9,6 +9,20 @@ import glob
 import scipy.io
 import tensorflow as tf
 
+'''# socials used
+socials=[
+  "Facebook",
+  "YouTube"
+]
+
+# folders of FaceForencics manipulation techniques
+manipulationTechnique=[
+  "FaceShifter",
+  "Deepfakes",
+  "FaceSwap",
+]
+'''
+
 # from github FaceForensics++
 def get_boundingbox(face, width, height, scale=1.3):  # takes a dlib face to return a bounding box
     x1 = face.left()
@@ -132,7 +146,7 @@ def decode_prediction(prediction):
     f_iter = 0
     t_iter = 0
     for i, logits in enumerate(prediction):
-        breakpoint()
+        #breakpoint()
         class_idx = tf.argmax(logits).numpy()
         p = logits[class_idx]
         name = class_names[class_idx]
@@ -147,7 +161,8 @@ def decode_prediction(prediction):
         print('Mean fake probability: ', 0, 'for n. frames: ', f_iter)
     else:
         print('Mean fake probability: ', np.mean(results[0]), 'for n. frames: ', f_iter)
-    if len(results[0]) == 0:
+        #shouldn't this be results[1]? before we get the fake, now we want the true ones, no?
+    if len(results[1]) == 0:
         print('Mean true probability: ', 0, 'for n. frames: ', t_iter)
     else:
         print('Mean true probability: ', np.mean(results[1]), 'for n. frames: ', t_iter)
@@ -155,7 +170,14 @@ def decode_prediction(prediction):
         #print("Frame {} prediction: {} ({:4.1f}%)".format(i, name, 100 * p))
 
 
-
+# set all arguments required
+# --video_native gets the nonShared videos
+# --video_social gets the    shared videos
+# --video_social_emu gets the emulated videos (generated with Emulator_all.sh)
+# --ckpt_native is the model for nonShared video
+# --ckpt_social is the model for shared videos
+# --ckpt_social_emu should be the model for emulated videos
+# --out_name .mat file where we store results
 parser = argparse.ArgumentParser()
 parser.add_argument('--video_native', default='video_native', help="path to native video")
 parser.add_argument('--video_social', default='video_social', help="path to social video")
@@ -167,27 +189,38 @@ parser.add_argument('--out_name', default='ckpt_social', help="path to ckpt soci
 
 args = parser.parse_args()
 
-
+# set to use the GPU rather than the CPU
 physical_devices = tf.config.list_physical_devices('GPU')
 print(physical_devices)
 for gpu_instance in physical_devices:
     print(gpu_instance)
     tf.config.experimental.set_memory_growth(gpu_instance, True)
 with tf.device('/GPU:0'):
+
+    # load the models from the parser
+    # model1 is the model for nonShared videos
+    # model2 is the model for shared videos
+    #model1 = load_model('/home/omar.facchini/SocialCompressionSimulation/emulator_scripts_OFF/emulator_scripts/media/SSD_new/BACKUP/home/federicomarcon/native/models/Densenet_Deepfakes.h5')
     model1 = load_model(args.ckpt_native) 
     model2 = load_model(args.ckpt_social)
     #model3 = load_model(args.ckpt_social_emu)
 
+    # get all the shared videos and sorts them
     videos = sorted(glob.glob(args.video_social + '*.mp4'))
-    breakpoint()
+    #breakpoint()
     print(videos)
     results_pesi_nonsocial = [[[],[]],[[],[]],[[],[]]]
     results_pesi_social = [[[],[]],[[],[]],[[],[]]]
     #results_pesi_social_emu = [[[],[]],[[],[]],[[],[]]]
 
-
+    # loop on the shared videos
     for v in videos:
-        video_native1 = args.video_native + v[len(args.video_native):]
+        # get the nonShared video referenced to the shared one, not sure why len(args)
+        # does not get the actual file, maybe use basename(v)?
+        #video_native1 = args.video_native + v[len(args.video_native):]
+        video_native1 = args.video_native + v.split("/")[-1]
+        
+        # not sure why we use both models for nonShared videos, maybe to compare how it changes?
         predictions1, predictions2 = analyze_video_multiple_models(video_native1, model1, model2)#, model3)
         result, _, _ = decode_prediction(predictions1)
         for r in result[0]:
@@ -207,7 +240,8 @@ with tf.device('/GPU:0'):
 
         ## ANALYZE VIDEO social (eg. video manipulated with NeuralTextures)
 
-        video_social1 = args.video_social + v[len(args.video_social):]
+        # video_social1 = args.video_social + v[len(args.video_social):]
+        video_social1 = args.video_social + v.split("/")[-1]
         predictions1, predictions2 = analyze_video_multiple_models(video_social1, model1, model2)#, model3)
         result, _, _ = decode_prediction(predictions1)
         for r in result[0]:
@@ -227,9 +261,10 @@ with tf.device('/GPU:0'):
 
 
         ## ANALYZE VIDEO social emulated (eg. video manipulated with NeuralTextures)
-        video_social_emu1 = args.video_social_emu + v[len(args.video_social_emu):]
+        #video_social_emu1 = args.video_social_emu + v[len(args.video_social_emu):]
+        video_social_emu1 = args.video_social_emu + v.split("/")[-1]
 
-        predictions1, predictions2, predictions3 = analyze_video_multiple_models(video_social_emu1, model1, model2)#, model3)  
+        predictions1, predictions2 = analyze_video_multiple_models(video_social_emu1, model1, model2)#, model3)  
         result, _, _ = decode_prediction(predictions1)
         for r in result[0]:
             results_pesi_nonsocial[2][0].append(r)

@@ -17,8 +17,6 @@ dir_IMMAGINI="dataset/nonShared/manipulated_sequences/"
 # original path
 # dir_IMMAGINI="/media/SSD_new/FaceForensics++/manipulated_sequences/"  #modifica con tuo path video non shared
 
-# should use the 2 path above, in row 83-84 and 86-87?
-
 # socials used
 socials=(
   "Facebook"
@@ -45,15 +43,6 @@ image_name="%04d.png"
 
 tau=1
 
-# stores one-shot crf
-array1=()
-
-# stores crf values tested, in this case 20-51
-array2=()
-
-# stores duration
-array3=()
-
 crf_1_file="crf_1.csv"
 crf_2_file="crf_2.csv"
 duration_file="duration.csv"
@@ -78,6 +67,16 @@ fi
 
 # combine socials, techniques and codecs 
 for folder in "${socials[@]}"; do
+  # stores one-shot crf
+  array1=()
+
+  # stores crf values tested, in this case 20-51
+  array2=()
+
+  # stores duration
+  array3=()
+
+  
   crf_1_file="${folder}"/"crf_1.csv"
   crf_2_file="${folder}"/"crf_2.csv"
   duration_file="${folder}"/"duration.csv"
@@ -146,7 +145,15 @@ for folder in "${socials[@]}"; do
           
 
 	        arr_bitstream=$((arr_bitstream+crt))
-          iter=$((iter+1))
+
+          if [ ! -f "$f" ]; 
+          then
+              echo "file $f does not exist"
+          else  
+              iter=$((iter+1))
+              echo "iter $iter"
+          fi
+
           echo "######mean CRT#######"
           result=$(echo "scale=2; $arr_bitstream / $iter" | bc)
           echo $result

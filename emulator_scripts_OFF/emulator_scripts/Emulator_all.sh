@@ -25,9 +25,9 @@ main_folders=(
 )
 
 # average oneshot(using crf_2.csv):
-# yt = 26.19
+# yt = 24.55
 # fb = 27.82 
-yt_crf=26 #i tuoi valori
+yt_crf=25 #i tuoi valori
 fb_crf=28 #i tuoi valori
 
 

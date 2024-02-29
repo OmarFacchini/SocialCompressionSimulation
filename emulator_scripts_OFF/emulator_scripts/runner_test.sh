@@ -8,6 +8,5 @@
 
 #NOTA: dovrai modificare main_largescaletest.py per eseguire il codice anche con i pesi ottenuti trainando su video emulati
 #TIP: Vedi i commenti nel codice :-)
-
-python main_largescaletest.py --video_native /media/SSD_new/FaceForensics++/manipulated_sequences/NeuralTextures/c23/videos/ --video_social ff++_shared/FaceForensics++_shared/YouTube/test_youtube_neuraltextures/ --video_social_emu /media/SSD_new/BACKUP/home/federicomarcon/emu_social/Youtube/NeuralTextures/libx264/ --ckpt_native Models/Dense/Densenet_NeuralTextures.h5 --ckpt_social Models/Dense/social/Densenet_YT__NeuralTextures.h5 --out_name Dense_NT_YT.mat
-
+#--ckpt_social_emu emulator_scripts_OFF/emulator_scripts/dataset/emulated/Facebook/Deepfakes/libx264
+python main_largescaletest.py --video_native /home/omar.facchini/SocialCompressionSimulation/emulator_scripts_OFF/emulator_scripts/dataset/nonShared/manipulated_sequences/Deepfakes/c23/videos/ --video_social /home/omar.facchini/SocialCompressionSimulation/emulator_scripts_OFF/emulator_scripts/dataset/shared/Facebook/test_facebook_deepfakes/ --video_social_emu /home/omar.facchini/SocialCompressionSimulation/emulator_scripts_OFF/emulator_scripts/dataset/emulated/Facebook/Deepfakes/libx264/ --ckpt_native /home/omar.facchini/SocialCompressionSimulation/emulator_scripts_OFF/emulator_scripts/media/SSD_new/BACKUP/home/federicomarcon/native/models/Densenet_Deepfakes.h5 --ckpt_social /home/omar.facchini/SocialCompressionSimulation/emulator_scripts_OFF/emulator_scripts/media/SSD_new/BACKUP/home/federicomarcon/facebook/models/Densenet_FB_Deepfakes.h5 --out_name /home/omar.facchini/SocialCompressionSimulation/emulator_scripts_OFF/emulator_scripts/results/Facebook/Dense_Deepfake_FB2.mat
